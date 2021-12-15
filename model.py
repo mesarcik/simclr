@@ -7,18 +7,14 @@ class Resnet(nn.Module):
     def __init__(self, out_dim=128):
         super(Resnet, self).__init__()
 
-        resnet = models.resnet18(pretrained=False, num_classes=out_dim)
-        self.dim_mlp = resnet.fc.in_features
-        self.temp_fc = resnet.fc
+        self.resnet = models.resnet18(pretrained=False, num_classes=out_dim)
+        dim_mlp = self.resnet.fc.in_features
         
-        modules=list(resnet.children())[:-1]
-        self.resnet =nn.Sequential(*modules)
+        self.resnet.fc = nn.Sequential(nn.Linear(dim_mlp, dim_mlp), nn.ReLU(), self.resnet.fc)
 
-        self.fc = nn.Sequential(nn.Linear(self.dim_mlp, self.dim_mlp), nn.ReLU(), self.temp_fc)
 
     def forward(self, x):
-        out = self.resnet(x)
-        return self.fc(out)
-    
-    def project(self,x):
         return self.resnet(x)
+    
+    #def project(self,x):
+    #    return self.resnet(x)
